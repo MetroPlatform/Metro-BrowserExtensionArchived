@@ -14,7 +14,7 @@ PRs and Issues are welcome.
 
 ## Install ##
 
-1. First download the Metro extension from LINK TO DOWNLOAD. Right click on the downloaded zip file and unzip it.
+1. First download the Metro extension from [here](https://github.com/MetroPlatform/MetroChromeExtension/archive/master.zip). Right click on the downloaded zip file and unzip it.
 
 2. Now type or copy/paste chrome://extensions into the address bar and press enter. This will open the extensions settings page.
 
