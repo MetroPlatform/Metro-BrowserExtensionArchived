@@ -1,0 +1,28 @@
+body {
+  background-color: #343a40;
+  margin: 30px;
+  font-size: 12px;
+  width: 640px;
+}
+
+.text-main {
+  color: #efc04e;
+}
+
+h1 {
+  color: #efc04e;
+}
+
+.list-group-item {
+  word-wrap: break-word;
+}
+
+#container {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.invisible {
+  display: none;
+}
