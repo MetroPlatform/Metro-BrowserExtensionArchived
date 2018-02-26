@@ -14,8 +14,13 @@
     "activeTab",
     "storage",
     "tabs",
-    "http://*/"
+    "http://*/",
+    "background"
   ],
+
+  "background": {
+    "scripts": ["src/core/background.js"]
+  },
 
   "content_scripts": [
     {
