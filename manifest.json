@@ -10,6 +10,12 @@
     "default_popup": "src/options/options.html"
   },
 
+  "icons": {
+    "16": "assets/metroLogo.png",
+    "48": "assets/metroLogo.png",
+    "128": "assets/metroLogo.png"
+  },
+
   "permissions": [
     "activeTab",
     "storage",
