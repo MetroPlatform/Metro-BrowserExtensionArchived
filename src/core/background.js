@@ -38,6 +38,8 @@ chrome.runtime.onMessage.addListener(
         }
       }
     });
+
+    callback(JSON.stringify(data));
   }
 );
 

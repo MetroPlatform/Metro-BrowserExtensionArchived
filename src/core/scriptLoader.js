@@ -143,7 +143,7 @@ const parseAllowedSources = function(response) {
 
       let DS = currentDS['slug'];
 
-      let sourceURL = "https://raw.githubusercontent.com/RoryOfByrne/MetroDataSources/master/datasources/" + currentDS['name'];
+      let sourceURL = "https://raw.githubusercontent.com/MetroPlatform/Metro-DataSources/master/datasources/" + currentDS['name'];
 
       loadSourceFromBaseURL(sourceURL, projects, DS, username);
     }
