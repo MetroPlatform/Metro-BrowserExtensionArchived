@@ -62,7 +62,8 @@ const runDataSource = function(datasource, scriptURL, schemaURL, projects, DS, u
           }
         },
 
-        addContextMenuButton: function(buttonDetails, buttonFunction) {
+        createContextMenuButton: function(buttonDetails, buttonFunction) {
+          console.log("createContextMenuButton hit");
           buttonDetails['type'] = 'contextMenu';
           // Send message telling background script to create the `contextMenu` button
           chrome.runtime.sendMessage(buttonDetails, function(response) {
@@ -73,6 +74,8 @@ const runDataSource = function(datasource, scriptURL, schemaURL, projects, DS, u
           // NOTE: Should one listener handle all `contextMenu` buttons?
           // ...Or is this ok? A new listener each time `addContextMenuButton` is called
           chrome.extension.onMessage.addListener(function(message, sender, callback) {
+            console.log("Received message from background script");
+            console.log(message);
             if(message['type'] == buttonDetails['type']
                && message.buttonFunction = buttonDetails.buttonFunction) {
               buttonFunction();
