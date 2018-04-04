@@ -1,3 +1,98 @@
+const ContextMenuButtons = "Metro-Core-ContextMenuButtons";
+
+/*
+* Create a Metro Client for a DataSource
+*/
+const createMetroClient = function(datasource, scriptURL, schemaURL, projects, DS, username, schema) {
+  var mc = {
+    contextMenuButtons: [],
+    sendDatapoint: function(datapoint) {
+      if(validateDatapoint(schema, datapoint)) {
+        console.log("Pushing datapoint for " + DS);
+        let datapointDetails = {
+          'ds': DS,
+          'username': username,
+          'projects': projects,
+          'datapoint': datapoint
+        }
+
+        chrome.runtime.sendMessage(datapointDetails, function(response) {
+          console.log(response);
+        });
+      }
+    },
+
+    createContextMenuButton: function(buttonDetails, buttonFunction) {
+      buttonDetails['datasource'] = datasource;
+      var obj = {};
+      obj[ContextMenuButtons] = [];
+      chrome.storage.local.get(obj, function(result) {
+          if(result[ContextMenuButtons].includes(buttonDetails.datasource)) {
+            return false;
+          } else {
+            _createContextMenuButton(buttonDetails, buttonFunction, result);
+          }
+        });
+    },
+
+    storeData: function(key, value) {
+      // TODO: Can add validation here.
+      let storageItem = {};
+      storageItem[datasource+"-"+key] = value;
+
+      chrome.storage.sync.set(storageItem);
+    },
+
+    readData: function(key, callback) {
+      // TODO: Can add validation here.
+      chrome.storage.sync.get(datasource+"-"+key, function(items) {
+        let retVal = "-1";
+
+        try {
+          retVal = items[datasource+"-"+key];
+        } catch (e) {
+          console.log("Error reading data:");
+          console.log(e);
+        }
+
+        callback(retVal);
+      });
+    }
+  }
+
+  return mc;
+}
+
+/*
+* Create a contextMenu item
+*/
+const _createContextMenuButton = function(buttonDetails, buttonFunction, contextMenuState) {
+  buttonDetails['type'] = 'contextMenu';
+  // Send message telling background script to create the `contextMenu` button
+  chrome.runtime.sendMessage(buttonDetails, function(response) {
+    if(response == true) {
+      // Create receiver which checks `functionName` and calls the appropriate function
+      // NOTE: Should one listener handle all `contextMenu` buttons?
+      // ...Or is this ok? A new listener each time `addContextMenuButton` is called
+      chrome.extension.onMessage.addListener(function(message, sender, callback) {
+        if(message['type'] == buttonDetails['type'] && message['buttonFunction'] == buttonDetails['buttonFunction']) {
+          buttonFunction();
+        }
+        callback(true);
+      });
+
+      if(!contextMenuState[ContextMenuButtons].includes(buttonDetails.datasource)) {
+        contextMenuState[ContextMenuButtons].push(buttonDetails.datasource);
+      }
+      chrome.storage.local.set(contextMenuState, function() {
+          return;
+        });
+    } else {
+      console.log("Error creating contextMenu button");
+    }
+  });
+}
+
 /**
  * Returns true if the two objects have the same keys.
  */
@@ -45,68 +140,7 @@ const runDataSource = function(datasource, scriptURL, schemaURL, projects, DS, u
       let schema = JSON.parse(schemaText);
 
       // Create the object:
-      var metroClient = {
-        sendDatapoint: function(datapoint) {
-          if(validateDatapoint(schema, datapoint)) {
-            console.log("Pushing datapoint for " + DS);
-            let datapointDetails = {
-              'ds': DS,
-              'username': username,
-              'projects': projects,
-              'datapoint': datapoint
-            }
-
-            chrome.runtime.sendMessage(datapointDetails, function(response) {
-              console.log(response);
-            });
-          }
-        },
-
-        createContextMenuButton: function(buttonDetails, buttonFunction) {
-          console.log("createContextMenuButton hit");
-          buttonDetails['type'] = 'contextMenu';
-          // Send message telling background script to create the `contextMenu` button
-          chrome.runtime.sendMessage(buttonDetails, function(response) {
-            console.log("addContextMenuButton response: " + response);
-          });
-
-          // Create receiver which checks `functionName` and calls the appropriate function
-          // NOTE: Should one listener handle all `contextMenu` buttons?
-          // ...Or is this ok? A new listener each time `addContextMenuButton` is called
-          chrome.extension.onMessage.addListener(function(message, sender, callback) {
-            console.log("Received message from background script");
-            console.log(message);
-            if(message['type'] == buttonDetails['type']
-               && message.buttonFunction = buttonDetails.buttonFunction) {
-              buttonFunction();
-            }
-          })
-        },
-
-        storeData: function(key, value) {
-          // TODO: Can add validation here.
-          let storageItem = {};
-          storageItem[datasource+"-"+key] = value;
-
-          chrome.storage.sync.set(storageItem);
-        },
-
-        readData: function(key, callback) {
-          // TODO: Can add validation here.
-          chrome.storage.sync.get(datasource+"-"+key, function(items) {
-            let retVal = "-1";
-
-            try {
-              retVal = items[datasource+"-"+key];
-            } catch (e) {
-              console.log("Error reading data:");
-              console.log(e);
-            }
-
-            callback(retVal);
-          });
-        }
-      }
+      var metroClient = createMetroClient(datasource, scriptURL, schemaURL, projects, DS, username, schema);
 
       eval(script);
 

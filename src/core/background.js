@@ -1,3 +1,5 @@
+const ContextMenuButtons = "Metro-Core-ContextMenuButtons";
+
 /**
  * Actually pushes the datapoint to the lambda function.
  */
@@ -5,25 +7,7 @@ chrome.runtime.onMessage.addListener(
   function(message, sender, callback) {
     // Receive all messages here and differentiate by the `type` field?
     if(message['type'] == 'contextMenu') {
-      // This is the MetroClient telling the background script to create
-      // a `contextMenu` button...
-      chrome.contextMenus.create({
-        title: message.buttonTitle,
-        contexts: message.contexts,
-        onclick: function(info, tab) {
-          // When the button is clicked, we send a msg to the content script
-          // signaling to execute the function `functionName`
-          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, {
-              type: message['type'],
-              functionName: message['functionName']
-            }, function(response) {
-              console.log(response);
-            });
-          });
-        }
-      });
-
+      callback(handleContextMenuMessage(message));
     } else {
       let datapointDetails = message;
       datasource = datapointDetails['ds'];
@@ -68,6 +52,34 @@ chrome.runtime.onMessage.addListener(
 );
 
 /*
+* Handles a contextMenu message from the content script
+*/
+const handleContextMenuMessage = function(message) {
+  // This is the MetroClient telling the background script to create
+  // a `contextMenu` button...
+  chrome.contextMenus.create({
+    title: message['buttonTitle'],
+    contexts: message['contexts'],
+    onclick: function(info, tab) {
+      // When the button is clicked, we send a msg to the content script
+      // signaling to execute the function `functionName`
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: message['type'],
+          buttonFunction: message['buttonFunction']
+        }, function(response) {
+          if(response == false) {
+            console.log("Error running " + message['buttonFunction']);
+            return false;
+          }
+        });
+      });
+    }
+  });
+  return true;
+}
+
+/*
  * Gets the API Gateway key and pushed the data with it.
  */
 const getKeyAndPush = function(xhr, data) {
@@ -88,3 +100,13 @@ const getKeyAndPush = function(xhr, data) {
 
   keyRequester.send();
 }
+
+const cleanStorage = function() {
+  chrome.storage.local.remove(ContextMenuButtons, function() {
+    console.log("ContextMenuButtons cleared");
+  })
+}
+
+chrome.runtime.onInstalled.addListener(function() {
+  cleanStorage();
+});
