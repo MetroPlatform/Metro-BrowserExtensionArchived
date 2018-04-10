@@ -1,3 +1,63 @@
+const messageListener = function(request, sender, callback) {
+  if(request.method == "initDatasource") {
+    initMetroClient(request.data);
+  }
+}
+
+chrome.extension.onRequest.addListener(messageListener);
+
+const initMetroClient = function(data) {
+  datasource = data['datasource']
+  DS = data['DS']
+  username = data['username']
+  projects = data['projects']
+  schema = data['schema']
+
+  // Create the object:
+  var metroClient = {
+    sendDatapoint: function(datapoint) {
+      if(validateDatapoint(schema, datapoint)) {
+        console.log("Pushing datapoint for " + DS);
+        let datapointDetails = {
+          'method': "push",
+          'ds': DS,
+          'username': username,
+          'projects': projects,
+          'datapoint': datapoint
+        }
+
+        chrome.runtime.sendMessage(datapointDetails, {});
+      }
+    },
+
+    storeData: function(key, value) {
+      // TODO: Can add validation here.
+      let storageItem = {};
+      storageItem[datasource+"-"+key] = value;
+
+      chrome.storage.sync.set(storageItem);
+    },
+
+    readData: function(key, callback) {
+      // TODO: Can add validation here.
+      chrome.storage.sync.get(datasource+"-"+key, function(items) {
+        let retVal = "-1";
+
+        try {
+          retVal = items[datasource+"-"+key];
+        } catch (e) {
+          console.log("Error reading data:");
+          console.log(e);
+        }
+
+        callback(retVal);
+      });
+    }
+  }
+
+  initDataSource(metroClient);
+}
+
 /**
  * Returns true if the two objects have the same keys.
  */
@@ -37,89 +97,19 @@ const getDataFromURL = function loadURL(url, callback) {
 }
 
 /**
- * Actually runs the datasource given the scriptURL and the schemaURL.
- */
-const runDataSource = function(datasource, scriptURL, schemaURL, projects, DS, username) {
-  getDataFromURL(scriptURL, function(script) {
-    getDataFromURL(schemaURL, function(schemaText) {
-      let schema = JSON.parse(schemaText);
-
-      // Create the object:
-      var metroClient = {
-        sendDatapoint: function(datapoint) {
-          if(validateDatapoint(schema, datapoint)) {
-            console.log("Pushing datapoint for " + DS);
-            let datapointDetails = {
-              'ds': DS,
-              'username': username,
-              'projects': projects,
-              'datapoint': datapoint
-            }
-
-            chrome.runtime.sendMessage(datapointDetails, function(response) {
-              console.log(response);
-            });
-          }
-        },
-
-        storeData: function(key, value) {
-          // TODO: Can add validation here.
-          let storageItem = {};
-          storageItem[datasource+"-"+key] = value;
-
-          chrome.storage.sync.set(storageItem);
-        },
-
-        readData: function(key, callback) {
-          // TODO: Can add validation here.
-          chrome.storage.sync.get(datasource+"-"+key, function(items) {
-            let retVal = "-1";
-
-            try {
-              retVal = items[datasource+"-"+key];
-            } catch (e) {
-              console.log("Error reading data:");
-              console.log(e);
-            }
-
-            callback(retVal);
-          });
-        }
-      }
-
-      eval(script);
-
-      // Run the DataSource.
-      initDataSource(metroClient);
-
-      console.log("Source " + datasource + " enabled.");
-    });
-  });
-}
-
-/**
  * Given a base URL, load the manifest, see if the source is allowed and if so,
  * run it.
  */
 const loadSourceFromBaseURL = function(baseURL, projects, DS, username) {
-  let manifestURL = baseURL + "/manifest.json";
+  let dsDetails = {
+    "method": "load",
+    "baseURL": baseURL,
+    "projects": projects,
+    "DS": DS,
+    "username": username
+  }
 
-  getDataFromURL(manifestURL, function(manifestText) {
-    let manifest = JSON.parse(manifestText);
-    let siteRegexes = manifest['sites'];
-
-    for(var i=0, len=siteRegexes.length; i<len; i++) {
-      let regex = new RegExp(siteRegexes[i]);
-
-      // If the current site matches one of the manifest regexes...
-      if(regex.test(window.location.href)) {
-        let scriptURL = baseURL + "/plugin.js";
-        let schemaURL = baseURL + "/schema.json";
-
-        runDataSource(manifest['name'], scriptURL, schemaURL, projects, DS, username);
-      }
-    }
-  });
+  chrome.runtime.sendMessage(dsDetails, {});
 }
 
 /**
@@ -127,7 +117,6 @@ const loadSourceFromBaseURL = function(baseURL, projects, DS, username) {
  * to run on the current site.
  */
 const parseAllowedSources = function(response) {
-
   response = JSON.parse(response);
 
   if(response['status'] == 1) {
