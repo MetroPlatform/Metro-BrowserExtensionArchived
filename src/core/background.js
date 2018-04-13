@@ -55,7 +55,7 @@ const runDataSource = function(tabID, datasource, scriptURL, schemaURL, projects
 
       chrome.tabs.executeScript(tabID, {"code": script}, function() {
         // Run the DataSource.
-        chrome.tabs.sendRequest(tabID, {
+        chrome.tabs.sendMessage(tabID, {
           "method": "initDatasource",
           "data": {
             "DS": DS,

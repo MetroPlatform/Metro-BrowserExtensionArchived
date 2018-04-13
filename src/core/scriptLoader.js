@@ -4,7 +4,7 @@ const messageListener = function(request, sender, callback) {
   }
 }
 
-chrome.extension.onRequest.addListener(messageListener);
+chrome.runtime.onMessage.addListener(messageListener);
 
 const initMetroClient = function(data) {
   datasource = data['datasource']
