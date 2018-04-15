@@ -1,0 +1,39 @@
+{
+  "manifest_version": 2,
+  "name": "Metro",
+  "description": "This extension allows a user to produce data using https://metro.exchange",
+  "version": "0.2",
+
+  "browser_action": {
+    "default_icon": "assets/metroLogo.png",
+    "default_popup": "src/options/options.html"
+  },
+
+  "icons": {
+    "16": "assets/metroLogo.png",
+    "48": "assets/metroLogo.png",
+    "128": "assets/metroLogo.png"
+  },
+
+  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "storage",
+    "tabs",
+    "http://*/",
+    "https://*/"
+  ],
+
+  "background": {
+    "scripts": ["src/core/background.js"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/vendor/jquery/jquery.js", "src/core/scriptLoader.js"]
+    }
+  ],
+
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}
