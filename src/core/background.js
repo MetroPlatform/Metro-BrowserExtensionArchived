@@ -1,14 +1,20 @@
+const BUTTON_STATE = "Metro-Core-ContextMenuButtons";
+
 chrome.runtime.onMessage.addListener(
   function(data, sender, callback) {
-    // Handler called when we want to send a datapoint.
     if(data['method'] == "push") {
+      // Handler called when we want to send a datapoint.
       pushToLambda(data);
-    }
-
-    // Handler called when we load a page.
-    // This handles getting the datasource code to run within the tab.
-    if(data['method'] == "load") {
+    } else if(data['method'] == "load") {
+      // Handler called when we load a page.
+      // This handles getting the datasource code to run within the tab.
       onPageLoad(data, sender);
+    } else if(data['method'] == "contextMenu-create") {
+      // Handle the creation of a new right-click menu button
+      callback(createContextMenuButton(data));
+    } else if(data['method'] == "contextMenu-removeAll") {
+      // Clear all contextMenu items
+      clearContextMenu();
     }
   }
 );
@@ -88,6 +94,36 @@ const getDataFromURL = function loadURL(url, callback) {
   xhr.send();
 }
 
+/*
+*   Creates a contextMenu button
+*/
+const createContextMenuButton = function(message) {
+  // This is the MetroClient telling the background script to create
+  // a `contextMenu` button...
+  chrome.contextMenus.create({
+    title: message['buttonTitle'],
+    contexts: message['contexts'],
+    onclick: function(info, tab) {
+      // When the button is clicked, we send a msg to the content script
+      // signaling to execute the function `functionName`
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: message['type'],
+          functionName: message['functionName']
+        }, function(response) {
+          // Here we deal with the response from the buttonFunction
+          if(response['status'] == 0) {
+            console.log("Error running contextMenu function");
+            // FF can't open alerts from the background script, so gotta do it the hacky way
+            var alertCode = "alert('" + response['msg'] + "');";
+            chrome.tabs.executeScript({'code': alertCode});
+          }
+        });
+      });
+    }
+  });
+  return true;
+}
 /**
  * Actually pushes the datapoint to the lambda function.
  */
@@ -150,3 +186,20 @@ const getKeyAndPush = function(xhr, data) {
 
   keyRequester.send();
 }
+
+const clearContextMenu = function() {
+  chrome.contextMenus.removeAll(function() {
+    clearContextMenuStorage();
+    console.log("ContextMenu cleared");
+  });
+}
+
+const clearContextMenuStorage = function() {
+  chrome.storage.local.remove(BUTTON_STATE, function() {
+    console.log("ContextMenuState cleared");
+  })
+}
+
+chrome.runtime.onInstalled.addListener(function() {
+  clearContextMenu();
+});
