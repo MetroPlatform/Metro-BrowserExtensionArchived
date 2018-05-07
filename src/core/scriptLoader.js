@@ -86,9 +86,7 @@ const _createContextMenuButton = function(buttonDetails, buttonFunction) {
   // Send message telling background script to create the `contextMenu` button
   chrome.runtime.sendMessage(buttonDetails, function(response) {
     if(response == true) {
-      // Create receiver which checks `functionName` and calls the appropriate function
-      // NOTE: Should one listener handle all `contextMenu` buttons?
-      // ...Or is this ok? A new listener each time `addContextMenuButton` is called
+      // Create listener which checks `functionName` and calls the appropriate function
       chrome.runtime.onMessage.addListener(function(message, sender, callback) {
         if(message['type'] == buttonDetails['type'] && message['functionName'] == buttonDetails['functionName']) {
           callback(buttonFunction());
