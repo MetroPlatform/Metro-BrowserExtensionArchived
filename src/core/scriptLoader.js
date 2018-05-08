@@ -184,7 +184,7 @@ const parseAllowedSources = function(response) {
 }
 
 /**
- * Loads and enables any DataSource a user has enabled on the site.
+ * Loads and enables any DataSource a user has enabled on the site, or the devMode script if devMode is on
  */
 const loadScripts = function() {
   // Check the devMode setting
