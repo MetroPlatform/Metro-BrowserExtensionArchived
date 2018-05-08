@@ -116,7 +116,8 @@ const createContextMenuButton = function(message) {
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         chrome.tabs.sendMessage(tabs[0].id, {
           type: message['type'],
-          functionName: message['functionName']
+          functionName: message['functionName'],
+          contextInfo: info // Add the info from the contextMenu context too
         }, function(response) {
           // Here we deal with the response from the buttonFunction
           if(response['status'] == 0) {
