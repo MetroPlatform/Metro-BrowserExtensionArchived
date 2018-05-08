@@ -89,7 +89,7 @@ const _createContextMenuButton = function(buttonDetails, buttonFunction) {
       // Create listener which checks `functionName` and calls the appropriate function
       chrome.runtime.onMessage.addListener(function(message, sender, callback) {
         if(message['type'] == buttonDetails['type'] && message['functionName'] == buttonDetails['functionName']) {
-          callback(buttonFunction());
+          callback(buttonFunction(message['contextInfo'])); // Pass the contextInfo from the contextMenu callback
         }
       });
     } else {
