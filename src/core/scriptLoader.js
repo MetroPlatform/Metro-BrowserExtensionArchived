@@ -184,36 +184,31 @@ const parseAllowedSources = function(response) {
 }
 
 /**
- * Loads any dev mode scripts if needed.
+ * Loads and enables any DataSource a user has enabled on the site, or the devMode script if devMode is on
  */
-const loadDevScripts = function() {
+const loadScripts = function() {
+  // Check the devMode setting
   chrome.storage.sync.get("Settings-devModeCheckbox", function(items) {
     if(chrome.runtime.error) {
       return false;
     } else {
       if(items["Settings-devModeCheckbox"]) {
+        // Load the dev DataSource if necessary
         // Get the Github URL.
         chrome.storage.sync.get("Settings-devModeGithubURL", function(items) {
           if(chrome.runtime.error) {
             console.log("Runtime error getting the Github URL from chrome storage.");
           } else {
+            // Load the devMove DataSource
             loadSourceFromBaseURL(items["Settings-devModeGithubURL"], "test-user");
           }
         });
+      } else {
+        // Otherwise load the "real" DataSources.
+        getDataFromURL("https://metro.exchange/api/profile/datasources/", parseAllowedSources);
       }
     }
   });
-}
-
-/**
- * Loads and enables any DataSource a user has enabled on the site.
- */
-const loadScripts = function() {
-  // Will load any dev scripts if needed.
-  loadDevScripts();
-
-  // And then the "real" ones.
-  getDataFromURL("https://metro.exchange/api/profile/datasources/", parseAllowedSources);
 }
 
 // Only load the relevant scripts if we are allowed to monitor.
