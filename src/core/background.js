@@ -19,7 +19,18 @@ chrome.runtime.onMessage.addListener(
       case "contextMenu-removeAll":
         // Clear all contextMenu items
         clearContextMenu();
+        break;
+      case "loadHTML":
+        // Loads a HTML file from the extension and returns it.
+        $.ajax({
+          url: chrome.extension.getURL("src/static/" + data['file']),
+          dataType: "html",
+          success: callback
+        });
+        break;
     }
+
+    return true;
   }
 );
 
@@ -46,7 +57,7 @@ const onPageLoad = function(data, sender) {
 
       // If the current site matches one of the manifest regexes...
       if(regex.test(tab.url)) {
-        let scriptURL = baseURL + "/plugin.js";
+        let scriptURL = baseURL + "/plugin.js?a="+Date.now();
         let schemaURL = baseURL + "/schema.json";
 
         runDataSource(tab.id, manifest['name'], scriptURL, schemaURL, projects, DS, username);

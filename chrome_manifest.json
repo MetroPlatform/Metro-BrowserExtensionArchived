@@ -25,7 +25,7 @@
   ],
 
   "background": {
-    "scripts": ["src/core/background.js"]
+    "scripts": ["src/vendor/jquery/jquery.js", "src/core/background.js"]
   },
 
   "content_scripts": [
@@ -33,6 +33,10 @@
       "matches": ["<all_urls>"],
       "js": ["src/vendor/jquery/jquery.js", "src/core/scriptLoader.js"]
     }
+  ],
+
+  "web_accessible_resources": [
+    "src/static/*"
   ],
 
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"

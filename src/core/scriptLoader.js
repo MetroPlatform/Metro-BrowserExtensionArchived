@@ -55,6 +55,7 @@ const initMetroClient = function(data) {
         callback(retVal);
       });
     },
+
     createContextMenuButton: function(buttonDetails, buttonFunction) {
       buttonDetails['datasource'] = datasource;
       var obj = {};
@@ -72,6 +73,37 @@ const initMetroClient = function(data) {
             });
           }
         });
+    },
+
+    /*
+     * Creates a modal dialog box with a text field, description and callback
+     * function for when the text field is filled.
+     *
+     * dialogDetails is a dict with fields:
+     *  - description: String description to put beside the input box.
+     *  - submitCallback: Function to call when the input is submitted.
+     */
+    createModalForm: function(dialogDetails) {
+      description = dialogDetails['description'];
+      submitCallback = dialogDetails['submitCallback'];
+
+      modalDetails = {
+        'method': 'loadHTML',
+        'file': "modalDialog.html"
+      };
+
+      chrome.runtime.sendMessage(modalDetails, function(modalHTML) {
+        var modal = document.createElement("div");
+        modal.innerHTML = modalHTML;
+        document.body.appendChild(modal);
+
+        $("#modalInputDescription").text(description);
+        $("#modalInputForm").on('submit', function(e) {
+          submitCallback($("#modalTextInput").val());
+          // Stops the normal form processing.
+          e.preventDefault();
+        });
+      });
     },
   }
 
