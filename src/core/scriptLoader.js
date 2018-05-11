@@ -96,6 +96,7 @@ const initMetroClient = function(data) {
         var modal = document.createElement("div");
         modal.innerHTML = modalHTML;
         document.body.appendChild(modal);
+        $("#exampleModal").modal('show');
 
         $("#modalInputDescription").text(description);
         $("#modalInputForm").on('submit', function(e) {
@@ -181,7 +182,7 @@ const loadSourceFromBaseURL = function(baseURL, projects, DS, username) {
     "username": username
   }
 
-  chrome.runtime.sendMessage(dsDetails, {});
+  chrome.runtime.sendMessage(dsDetails, function(dadsf) { console.log(dadsf); });
 }
 
 /**
@@ -247,7 +248,10 @@ const loadScripts = function() {
 chrome.storage.sync.get("Settings-shouldMonitorCheckbox", function(items) {
   if(items["Settings-shouldMonitorCheckbox"]) {
     // Clear the contextMenu on every page load
-    chrome.runtime.sendMessage({'method': "contextMenu-removeAll"}, {});
+    chrome.runtime.sendMessage({'method': "contextMenu-removeAll"}, function(response) {
+    console.log("LINE 251 RESPONSE:");
+      console.log(response);
+    });
 
     loadScripts();
   }

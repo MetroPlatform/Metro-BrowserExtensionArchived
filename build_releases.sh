@@ -26,19 +26,20 @@ cd ../
 #rm -fr chrome_tmp
 
 # Package the Firefox extension:
-#mkdir firefox_tmp
-#cp -R assets firefox_tmp
-#cp -R src firefox_tmp
-#cp firefox_manifest.json firefox_tmp/manifest.json
-#
-## Sign the Firefox extension:
+rm -fr firefox_tmp
+mkdir firefox_tmp
+cp -R assets firefox_tmp
+cp -R src firefox_tmp
+cp firefox_manifest.json firefox_tmp/manifest.json
+
+# Sign the Firefox extension:
 #cd firefox_tmp
 #web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET
 #cp web-ext-artifacts/* ../release/
 #cd ../
-#
+
 #rm -fr firefox_tmp
-#
-## Finalize the Firefox extension filename:
+
+# Finalize the Firefox extension filename:
 #rm -fr release/metro_firefox_extension.xpi
 #mv release/$(ls release | grep xpi) release/metro_firefox_extension.xpi
