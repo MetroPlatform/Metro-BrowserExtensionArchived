@@ -96,14 +96,25 @@ const initMetroClient = function(data) {
         var modal = document.createElement("div");
         modal.innerHTML = modalHTML;
         document.body.appendChild(modal);
-        $("#exampleModal").modal('show');
+        $("#metroDataSourceModal").css('display', 'block');
 
-        $("#modalInputDescription").text(description);
-        $("#modalInputForm").on('submit', function(e) {
-          submitCallback($("#modalTextInput").val());
+        $("#metroModalInputDescription").text(description);
+
+        $("#metroModalInputForm").on('submit', function(e) {
+          submitCallback($("#metroModalTextInput").val());
+          $("#metroDataSourceModal").css('display', 'none');
           // Stops the normal form processing.
           e.preventDefault();
         });
+
+        var modalDialog = document.getElementById('metroDataSourceModal');
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+          if (event.target == modalDialog) {
+            $("#metroDataSourceModal").css('display', 'none');
+          }
+        }
       });
     },
   }
@@ -182,7 +193,7 @@ const loadSourceFromBaseURL = function(baseURL, projects, DS, username) {
     "username": username
   }
 
-  chrome.runtime.sendMessage(dsDetails, function(dadsf) { console.log(dadsf); });
+  chrome.runtime.sendMessage(dsDetails, {});
 }
 
 /**
@@ -248,10 +259,7 @@ const loadScripts = function() {
 chrome.storage.sync.get("Settings-shouldMonitorCheckbox", function(items) {
   if(items["Settings-shouldMonitorCheckbox"]) {
     // Clear the contextMenu on every page load
-    chrome.runtime.sendMessage({'method': "contextMenu-removeAll"}, function(response) {
-    console.log("LINE 251 RESPONSE:");
-      console.log(response);
-    });
+    chrome.runtime.sendMessage({'method': "contextMenu-removeAll"}, {});
 
     loadScripts();
   }

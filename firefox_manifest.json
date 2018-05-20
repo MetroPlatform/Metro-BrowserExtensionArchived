@@ -27,11 +27,15 @@
     "storage",
     "tabs",
     "http://*/",
-    "https://*/"
+    "https://*/",
+    "<all_urls>"
   ],
 
   "background": {
-    "scripts": ["src/core/background.js"]
+    "scripts": [
+      "src/core/background.js",
+      "src/vendor/jquery/jquery.js"
+    ]
   },
 
   "content_scripts": [

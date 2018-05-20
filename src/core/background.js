@@ -25,7 +25,9 @@ chrome.runtime.onMessage.addListener(
         $.ajax({
           url: chrome.extension.getURL("src/static/" + data['file']),
           dataType: "html",
-          success: callback
+          success: function(data) {
+            callback(data);
+          }
         });
         break;
     }
