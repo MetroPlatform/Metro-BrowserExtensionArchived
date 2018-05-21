@@ -13,17 +13,16 @@
 #   To run just ./build_releases.sh
 
 # Zip the Chrome extension:
-rm -fr chrome_tmp
 mkdir chrome_tmp
 cp -R assets chrome_tmp
 cp -R src chrome_tmp
 cp chrome_manifest.json chrome_tmp/manifest.json
 
 cd chrome_tmp
-#zip -qr ../release/metro_chrome_extension.zip *
+zip -qr ../release/metro_chrome_extension.zip *
 cd ../
 
-#rm -fr chrome_tmp
+rm -fr chrome_tmp
 
 # Package the Firefox extension:
 rm -fr firefox_tmp
@@ -33,13 +32,13 @@ cp -R src firefox_tmp
 cp firefox_manifest.json firefox_tmp/manifest.json
 
 # Sign the Firefox extension:
-#cd firefox_tmp
-#web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET
-#cp web-ext-artifacts/* ../release/
-#cd ../
+cd firefox_tmp
+web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET
+cp web-ext-artifacts/* ../release/
+cd ../
 
-#rm -fr firefox_tmp
+rm -fr firefox_tmp
 
 # Finalize the Firefox extension filename:
-#rm -fr release/metro_firefox_extension.xpi
-#mv release/$(ls release | grep xpi) release/metro_firefox_extension.xpi
+rm -fr release/metro_firefox_extension.xpi
+mv release/$(ls release | grep xpi) release/metro_firefox_extension.xpi
