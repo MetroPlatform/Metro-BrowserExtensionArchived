@@ -4,7 +4,7 @@
 -->
 <style>
   /* The Modal (background) */
-  #metroDataSourceModal {
+  .mtr-modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
@@ -18,25 +18,37 @@
   }
 
   /* Modal Content/Box */
-  #metroModalContent {
-    background-color: #fefefe;
+  .mtr-modal-content {
+    background-color: #f8f8f8;
     margin: 15% auto; /* 15% from the top and centered */
-    padding: 30px;
-    border: 1px solid #888;
-    width: 40%; /* Could be more or less, depending on screen size */
+    height: 60px;
+    width: 500px;
+    padding: 10px;
+    border: 2px solid #efc04e;
+    border-radius: 10px;
+    display: flex;
+    box-shadow: -1px 1px #414040;
+  }
+
+  /* Input Form */
+  .mtr-modal-form {
+    width: 98%;
+  }
+
+  /* Input Box */
+  .mtr-form-input {
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    padding-left: 12px;
+    font-size: 1.1rem;
   }
 </style>
 
-<div id="metroDataSourceModal">
-  <div>
-    <div id="metroModalContent">
-      <div>
-        <form id="metroModalInputForm">
-          <span id="metroModalInputDescription"></span>
-          <input type="text" id="metroModalTextInput">
-          <input type="submit" id="modalInputSubmit"/>
-        </form>
-      </div>
-    </div>
+<div class="mtr-modal">
+  <div class="mtr-modal-content">
+    <form class="mtr-modal-form">
+      <input type="text" class="mtr-form-input" />
+    </form>
   </div>
 </div>

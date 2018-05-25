@@ -93,26 +93,32 @@ const initMetroClient = function(data) {
       };
 
       chrome.runtime.sendMessage(modalDetails, function(modalHTML) {
-        var modal = document.createElement("div");
-        modal.innerHTML = modalHTML;
-        document.body.appendChild(modal);
-        $("#metroDataSourceModal").css('display', 'block');
+        var id = 'mtr-' + DS + '-modal';
+        var id_selector = '#' + id; // For use w/ jQuery
 
-        $("#metroModalInputDescription").text(description);
+        var $modal = $('<div></div>'); //document.createElement("div")
+        $modal.attr('id', id); // Set the id on the top-level div
+        $modal.html(modalHTML); // Add the modal to the container
+        $(document.body).append($modal); // Add modal to the body
 
-        $("#metroModalInputForm").on('submit', function(e) {
-          submitCallback($("#metroModalTextInput").val());
-          $("#metroDataSourceModal").css('display', 'none');
+        $(id_selector + " > .mtr-modal").css('display', 'block');
+
+        $(id_selector).find(".mtr-form-input").attr("placeholder", description); // Set input placeholder
+
+
+        $(id_selector).find(".mtr-modal-form").on('submit', function(e) {
+          submitCallback($(id_selector).find(".mtr-form-input").val());
+          $modal.remove(); // Remove modal when we're done
           // Stops the normal form processing.
           e.preventDefault();
         });
 
-        var modalDialog = document.getElementById('metroDataSourceModal');
+        var modalDialog = $modal.find('.mtr-modal')[0]; // Get the DOM reference to compare to event.target below
 
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
           if (event.target == modalDialog) {
-            $("#metroDataSourceModal").css('display', 'none');
+            $modal.remove(); // Remove modal if the user closes it
           }
         }
       });
