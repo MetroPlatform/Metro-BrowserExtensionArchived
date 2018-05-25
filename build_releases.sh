@@ -25,6 +25,7 @@ cd ../
 rm -fr chrome_tmp
 
 # Package the Firefox extension:
+rm -fr firefox_tmp
 mkdir firefox_tmp
 cp -R assets firefox_tmp
 cp -R src firefox_tmp

@@ -55,6 +55,7 @@ const initMetroClient = function(data) {
         callback(retVal);
       });
     },
+
     createContextMenuButton: function(buttonDetails, buttonFunction) {
       buttonDetails['datasource'] = datasource;
       var obj = {};
@@ -72,6 +73,55 @@ const initMetroClient = function(data) {
             });
           }
         });
+    },
+
+    /*
+     * Creates a modal dialog box with a text field, description and callback
+     * function for when the text field is filled.
+     *
+     * dialogDetails is a dict with fields:
+     *  - description: String description to put beside the input box.
+     *  - submitCallback: Function to call when the input is submitted.
+     */
+    createModalForm: function(dialogDetails) {
+      description = dialogDetails['description'];
+      submitCallback = dialogDetails['submitCallback'];
+
+      modalDetails = {
+        'method': 'loadHTML',
+        'file': "modalDialog.html"
+      };
+
+      chrome.runtime.sendMessage(modalDetails, function(modalHTML) {
+        var id = 'mtr-' + DS + '-modal';
+        var id_selector = '#' + id; // For use w/ jQuery
+
+        var $modal = $('<div></div>'); //document.createElement("div")
+        $modal.attr('id', id); // Set the id on the top-level div
+        $modal.html(modalHTML); // Add the modal to the container
+        $(document.body).append($modal); // Add modal to the body
+
+        $(id_selector + " > .mtr-modal").css('display', 'block');
+
+        $(id_selector).find(".mtr-form-input").attr("placeholder", description); // Set input placeholder
+
+
+        $(id_selector).find(".mtr-modal-form").on('submit', function(e) {
+          submitCallback($(id_selector).find(".mtr-form-input").val());
+          $modal.remove(); // Remove modal when we're done
+          // Stops the normal form processing.
+          e.preventDefault();
+        });
+
+        var modalDialog = $modal.find('.mtr-modal')[0]; // Get the DOM reference to compare to event.target below
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+          if (event.target == modalDialog) {
+            $modal.remove(); // Remove modal if the user closes it
+          }
+        }
+      });
     },
   }
 

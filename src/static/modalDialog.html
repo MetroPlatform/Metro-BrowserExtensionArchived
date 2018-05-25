@@ -1,0 +1,54 @@
+<!--
+  Not putting this in an external files as they can't be loaded cleanly
+  from the extension that way.
+-->
+<style>
+  /* The Modal (background) */
+  .mtr-modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  }
+
+  /* Modal Content/Box */
+  .mtr-modal-content {
+    background-color: #f8f8f8;
+    margin: 15% auto; /* 15% from the top and centered */
+    height: 60px;
+    width: 500px;
+    padding: 10px;
+    border: 2px solid #efc04e;
+    border-radius: 10px;
+    display: flex;
+    box-shadow: -1px 1px #414040;
+  }
+
+  /* Input Form */
+  .mtr-modal-form {
+    width: 98%;
+  }
+
+  /* Input Box */
+  .mtr-form-input {
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    padding-left: 12px;
+    font-size: 1.1rem;
+  }
+</style>
+
+<div class="mtr-modal">
+  <div class="mtr-modal-content">
+    <form class="mtr-modal-form">
+      <input type="text" class="mtr-form-input" />
+    </form>
+  </div>
+</div>
