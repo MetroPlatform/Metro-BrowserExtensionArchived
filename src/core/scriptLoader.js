@@ -104,11 +104,19 @@ const initMetroClient = function(data) {
         $(id_selector + " > .mtr-modal").css('display', 'block');
 
         $(id_selector).find(".mtr-form-input").attr("placeholder", description); // Set input placeholder
+        $(id_selector).find(".mtr-form-input").focus();
 
+        $(document).on('keyup.27', function(e) {
+          if(document.querySelector(":focus") == null && $modal != null) {
+            if (e.which == 27) { // escape key maps to keycode `27`
+              removeModal($modal);
+            }
+          }
+        });
 
         $(id_selector).find(".mtr-modal-form").on('submit', function(e) {
           submitCallback($(id_selector).find(".mtr-form-input").val());
-          $modal.remove(); // Remove modal when we're done
+          removeModal($modal); // Remove modal when we're done
           // Stops the normal form processing.
           e.preventDefault();
         });
@@ -118,7 +126,7 @@ const initMetroClient = function(data) {
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
           if (event.target == modalDialog) {
-            $modal.remove(); // Remove modal if the user closes it
+            removeModal($modal); // Remove modal if the user closes it
           }
         }
       });
@@ -126,6 +134,11 @@ const initMetroClient = function(data) {
   }
 
   initDataSource(metroClient);
+}
+
+function removeModal($modal) {
+  $(document).unbind('keyup.27');
+  $modal.remove();
 }
 
 /*
