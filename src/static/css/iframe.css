@@ -1,0 +1,17 @@
+/* Modal iFrame */
+iframe.mtr-iframe {
+  background-color: transparent;
+  padding: 0px;
+  overflow: hidden;
+  display: block;
+  position: fixed;
+  width: 80%;
+  min-width: 400px;
+  height: calc(100% - 70px);
+  top: 70px;
+  left: 50%;
+  margin: 0 0 0 -40%;
+  border: none;
+  font-family: sans-serif;
+  z-index: 2149999998
+}

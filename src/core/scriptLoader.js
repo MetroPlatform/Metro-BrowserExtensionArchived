@@ -87,45 +87,93 @@ const initMetroClient = function(data) {
       description = dialogDetails['description'];
       submitCallback = dialogDetails['submitCallback'];
 
-      modalDetails = {
-        'method': 'loadHTML',
-        'file': "modalDialog.html"
-      };
+      var $parentDiv = $('<div>');
+      $parentDiv.appendTo($(document.body));
+      var shadow = setUpShadowDOM($parentDiv);
 
-      chrome.runtime.sendMessage(modalDetails, function(modalHTML) {
-        var id = 'mtr-' + DS + '-modal';
-        var id_selector = '#' + id; // For use w/ jQuery
+      $frame = setUpModal(shadow);
 
-        var $modal = $('<div></div>'); //document.createElement("div")
-        $modal.attr('id', id); // Set the id on the top-level div
-        $modal.html(modalHTML); // Add the modal to the container
-        $(document.body).append($modal); // Add modal to the body
+      // Set up some useful refs
+      var $frameDocument = $($frame[0].contentDocument);
+      var $frameWindow = $($frame[0].contentWindow);
+      var $modal = $frameDocument.find('.mtr-modal-content');
 
-        $(id_selector + " > .mtr-modal").css('display', 'block');
+      $modal.find(".mtr-form-input").attr("placeholder", description); // Set input placeholder
 
-        $(id_selector).find(".mtr-form-input").attr("placeholder", description); // Set input placeholder
+      // Remove modal when ESC is pressed
+      $frameDocument.on('keyup.27', function(e) {
+        if (e.which == 27) { // escape key maps to keycode `27`
+          $parentDiv.remove();
+        }
+      });
 
+      // Callback and then remove the modal, upon submit
+      $modal.find(".mtr-modal-form").on('submit', function(e) {
+        submitCallback($modal.find(".mtr-form-input").val());
+        $parentDiv.remove(); // Remove modal when we're done
+        // Stops the normal form processing.
+        e.preventDefault();
+      });
 
-        $(id_selector).find(".mtr-modal-form").on('submit', function(e) {
-          submitCallback($(id_selector).find(".mtr-form-input").val());
-          $modal.remove(); // Remove modal when we're done
-          // Stops the normal form processing.
-          e.preventDefault();
-        });
-
-        var modalDialog = $modal.find('.mtr-modal')[0]; // Get the DOM reference to compare to event.target below
-
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-          if (event.target == modalDialog) {
-            $modal.remove(); // Remove modal if the user closes it
-          }
+      // When the user clicks anywhere outside of the modal && input box, close it
+      $frameWindow.on('click', function(event) {
+        if (event.target != $modal[0] && event.target != $modal.find('.mtr-form-input')[0]) {
+          $parentDiv.remove(); // Remove modal if the user closes it
         }
       });
     },
   }
 
   initDataSource(metroClient);
+}
+
+/*
+  Given a div, set up a Shadow DOM inside it
+*/
+function setUpShadowDOM($parentDiv) {
+  var shadow = $parentDiv[0].createShadowRoot();
+
+  return shadow;
+}
+
+/*
+  Given a reference to a Shadow DOM, set up an iFrame for the modalDialog inside it
+*/
+function setUpModal(shadow) {
+  // Add the iFrame CSS
+  var iframeStyleUrl = chrome.extension.getURL('src/static/css/iframe.css');
+  $('<link>', {
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: iframeStyleUrl
+  }).appendTo($(shadow));
+
+  // Add the iFrame
+  var modalFullURL = chrome.extension.getURL('src/static/components/modalDialog.html');
+  var $frame = $('<iframe>', {
+    src: modalFullURL,
+    class: 'mtr-iframe'
+  })
+  $frame.appendTo($(shadow));
+
+  // Hacky re-write of the iFrame so we can access its DOM; due to security restrictions
+  $frame[0].contentDocument.write(getFrameHtml(modalFullURL));
+
+  return $frame;
+}
+
+/*
+  Synchronous call to get the contents of a local file
+
+  **LOCAL ONLY**
+*/
+function getFrameHtml(url) {
+  // Uses synchronous call because it's a small local file
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", url, false);
+  xmlhttp.send();
+
+  return xmlhttp.responseText;
 }
 
 /*
