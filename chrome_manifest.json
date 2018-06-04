@@ -33,11 +33,7 @@
       "matches": ["<all_urls>"],
       "js": [
         "src/core/scriptLoader.js",
-        "src/vendor/jquery/jquery.js",
-        "src/vendor/bootstrap/bootstrap.js"
-      ],
-      "css": [
-        "src/vendor/bootstrap/bootstrap.css"
+        "src/vendor/jquery/jquery.js"
       ]
     }
   ],
