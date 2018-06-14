@@ -42,17 +42,22 @@ chrome.runtime.onMessage.addListener(
  * code and execute it on the page asynchronously.
  */
 const onPageLoad = function(data, sender) {
-  tab = sender.tab;
-  baseURL = data['baseURL'];
-  projects = data['projects'];
-  DS = data['DS'];
-  username = data['username'];
+  var tab = sender.tab;
+  var baseURL = data['baseURL'];
+  var projects = data['projects'];
+  var slug = data['slug'];
+  var devMode = data['devMode'];
+  var username = data['username'];
 
   let manifestURL = baseURL + "/manifest.json?t=" + Date.now();
 
   getDataFromURL(manifestURL, function(manifestText) {
     let manifest = JSON.parse(manifestText);
     let siteRegexes = manifest['sites'];
+
+    if(devMode == true) {
+      slug = manifest['name'];
+    }
 
     for(var i=0, len=siteRegexes.length; i<len; i++) {
       let regex = new RegExp(siteRegexes[i]);
@@ -62,7 +67,7 @@ const onPageLoad = function(data, sender) {
         let scriptURL = baseURL + "/plugin.js?t=" + Date.now();
         let schemaURL = baseURL + "/schema.json?t=" + Date.now();
 
-        runDataSource(tab.id, manifest['name'], scriptURL, schemaURL, projects, DS, username);
+        runDataSource(tab.id, manifest['name'], scriptURL, schemaURL, projects, slug, username);
       }
     }
   });
@@ -71,26 +76,29 @@ const onPageLoad = function(data, sender) {
 /**
  * Actually runs the datasource given the scriptURL and the schemaURL.
  */
-const runDataSource = function(tabID, datasource, scriptURL, schemaURL, projects, DS, username) {
+const runDataSource = function(tabID, datasource, scriptURL, schemaURL, projects, slug, username) {
   getDataFromURL(scriptURL, function(script) {
     getDataFromURL(schemaURL, function(schemaText) {
       let schema = JSON.parse(schemaText);
 
-      chrome.tabs.executeScript(tabID, {"code": script}, function() {
-        // Run the DataSource.
-        chrome.tabs.sendMessage(tabID, {
-          "method": "initDatasource",
-          "data": {
-            "DS": DS,
-            "datasource": datasource,
-            "username": username,
-            "projects": projects,
-            "schema": schema
-          }
-        });
+      chrome.tabs.sendMessage(tabID, {
+        // This causes the MetroClient for this DS to be created in
+        //    the content script
+        "method": "initDatasource",
+        "data": {
+          "slug": slug,
+          "datasource": datasource,
+          "username": username,
+          "projects": projects,
+          "schema": schema
+        }
+      },
+      function(result) {
+        // If the MetroClient is successfully instantiated, run the DS
+        if(result == true) {
+          chrome.tabs.executeScript(tabID, {"code": script}, function() {})
+        }
       });
-
-      console.log("Source " + datasource + " enabled.");
     });
   });
 }

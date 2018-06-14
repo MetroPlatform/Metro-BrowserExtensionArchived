@@ -1,28 +1,25 @@
 const BUTTON_STATE = "Metro-Core-ContextMenuButtons";
+var ACTIVE_DATASOURCES = {};
 
 const messageListener = function(request, sender, callback) {
   if(request.method == "initDatasource") {
-    initMetroClient(request.data);
+    callback(initDataSource(request.data));
   }
 }
 
 chrome.runtime.onMessage.addListener(messageListener);
 
-const initMetroClient = function(data) {
-  datasource = data['datasource']
-  DS = data['DS']
-  username = data['username']
-  projects = data['projects']
-  schema = data['schema']
-
-  // Create the object:
-  var metroClient = {
+/*
+  Creates a MetroClient for the given DataSource/User combo and returns it
+*/
+const createMetroClient = function(datasource, slug, username, projects, schema) {
+  return {
     sendDatapoint: function(datapoint) {
       if(validateDatapoint(schema, datapoint)) {
 
         let datapointDetails = {
           'method': "push",
-          'ds': DS,
+          'ds': slug,
           'username': username,
           'projects': projects,
           'datapoint': datapoint
@@ -84,8 +81,8 @@ const initMetroClient = function(data) {
      *  - submitCallback: Function to call when the input is submitted.
      */
     createModalForm: function(dialogDetails) {
-      description = dialogDetails['description'];
-      submitCallback = dialogDetails['submitCallback'];
+      var description = dialogDetails['description'];
+      var submitCallback = dialogDetails['submitCallback'];
 
       var $parentDiv = $('<div>');
       $parentDiv.appendTo($(document.body));
@@ -94,7 +91,7 @@ const initMetroClient = function(data) {
       $frame = setUpModal(shadow);
 
       // Set up some useful refs
-      var $frameDocument = $($frame[0].contentDocument);
+      var $frameDocument = $frame.contents();
       var $frameWindow = $($frame[0].contentWindow);
       var $modal = $frameDocument.find('.mtr-modal-content');
 
@@ -123,8 +120,46 @@ const initMetroClient = function(data) {
       });
     },
   }
+}
 
-  initDataSource(metroClient);
+/*
+  Initialized a DataSource by creating its MetroClient and adding it to the currently active datasources
+*/
+const initDataSource = function(data) {
+  datasource = data['datasource']
+  slug = data['slug'],
+  username = data['username']
+  projects = data['projects']
+  schema = data['schema']
+
+  if(slug in ACTIVE_DATASOURCES) {
+    console.log("DataSource " + slug + " is already active");
+    return false;
+  }
+
+  // Create the client:
+  var metroClient = createMetroClient(datasource, slug, username, projects, schema);
+
+  ACTIVE_DATASOURCES[slug] = {
+    'metroClient': metroClient
+  }
+  return true;
+}
+
+/*
+  The DataSource calls this to start itself
+*/
+function registerDataSource(datasource) {
+  if(datasource['name'] in ACTIVE_DATASOURCES) {
+    var ds = ACTIVE_DATASOURCES[datasource['name']];
+    ds['datasource'] = datasource;
+
+    ds['datasource'].initDataSource(ds['metroClient']);
+
+    console.log("DataSource " + datasource['name'] + " enabled.");
+  } else {
+    console.log("DataSource " + datasource['name'] + " not initialized. Won't start it.")
+  }
 }
 
 /*
@@ -157,7 +192,9 @@ function setUpModal(shadow) {
   $frame.appendTo($(shadow));
 
   // Hacky re-write of the iFrame so we can access its DOM; due to security restrictions
+  $frame[0].contentDocument.open();
   $frame[0].contentDocument.write(getFrameHtml(modalFullURL));
+  $frame[0].contentDocument.close();
 
   return $frame;
 }
@@ -165,7 +202,7 @@ function setUpModal(shadow) {
 /*
   Synchronous call to get the contents of a local file
 
-  **LOCAL ONLY**
+  **LOCAL FILES ONLY**
 */
 function getFrameHtml(url) {
   // Uses synchronous call because it's a small local file
@@ -238,13 +275,14 @@ const getDataFromURL = function loadURL(url, callback) {
  * Given a base URL, load the manifest, see if the source is allowed and if so,
  * run it.
  */
-const loadSourceFromBaseURL = function(baseURL, projects, DS, username) {
+const loadSourceFromBaseURL = function(baseURL, projects, slug, username, devMode) {
   let dsDetails = {
     "method": "load",
     "baseURL": baseURL,
     "projects": projects,
-    "DS": DS,
-    "username": username
+    "slug": slug,
+    "username": username,
+    "devMode": devMode
   }
 
   chrome.runtime.sendMessage(dsDetails, {});
@@ -268,11 +306,11 @@ const parseAllowedSources = function(response) {
         projects.push(currentDS['projects'][projectIndex]['slug']);
       }
 
-      let DS = currentDS['slug'];
+      let slug = currentDS['slug'];
 
       let sourceURL = "https://raw.githubusercontent.com/MetroPlatform/Metro-DataSources/master/datasources/" + currentDS['name'];
 
-      loadSourceFromBaseURL(sourceURL, projects, DS, username);
+      loadSourceFromBaseURL(sourceURL, projects, slug, username, false);
     }
 
   } else {
@@ -298,7 +336,7 @@ const loadScripts = function() {
             console.log("Runtime error getting the Github URL from chrome storage.");
           } else {
             // Load the devMove DataSource
-            loadSourceFromBaseURL(items["Settings-devModeGithubURL"], "test-user");
+            loadSourceFromBaseURL(items["Settings-devModeGithubURL"], null, "test-datasource", "test-user", true);
           }
         });
       } else {
