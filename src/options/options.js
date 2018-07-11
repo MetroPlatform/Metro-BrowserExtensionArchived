@@ -126,9 +126,11 @@ function initDevMode() {
     // If not in dev mode, hide the devModeContainer.
     document.getElementById("devModeContainer").className += " invisible";
   } else {
+    console.log("Checked");
     // In dev mode:
     // Remove invisible class
-    document.getElementById("devModeContainer").className.replace(/(?:^|\s)invisible(?!\S)/g, '');
+    let container = document.getElementById("devModeContainer");
+    container.className = container.className.replace("invisible", '');
 
     dumpStoredData();
     setClearStorageHandler();
