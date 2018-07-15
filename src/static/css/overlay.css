@@ -1,15 +1,11 @@
-#mtr-datasource-counter {
-    font-size: 14px;
-    width: 45px;
-    height: 45px;
-    line-height: 45px;
-    background-color: #343a40;
-    text-align: center;
+iframe.mtr-overlay {
+    background-color: transparent;
+    overflow: hidden;
+    display: block;
     padding: 0px;
     position: fixed;
-    border: 1px solid #efc04e;
-    color: #efc04e;
-    left: 15px;
-    bottom: 15px;
+    border: none;
+    left: 0px;
+    bottom: 0px;
     z-index: 9999999;
 }

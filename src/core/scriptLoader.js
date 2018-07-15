@@ -200,6 +200,34 @@ function setUpModal(shadow) {
 }
 
 /*
+  Given a reference to a Shadow DOM, set up an iFrame for the counter
+*/
+function setUpCounter(shadow) {
+  // Add the iFrame CSS
+  var overlayStyleUrl = chrome.extension.getURL('src/static/css/overlay.css');
+  $('<link>', {
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: overlayStyleUrl
+  }).appendTo($(shadow));
+
+  // Add the iFrame
+  var overlayFullURL = chrome.extension.getURL('src/static/components/datasourceCounter.html');
+  var $frame = $('<iframe>', {
+    src: overlayFullURL,
+    class: 'mtr-overlay'
+  })
+  $frame.appendTo($(shadow));
+
+  // Hacky re-write of the iFrame so we can access its DOM; due to security restrictions
+  $frame[0].contentDocument.open();
+  $frame[0].contentDocument.write(getFrameHtml(overlayFullURL));
+  $frame[0].contentDocument.close();
+
+  return $frame;
+}
+
+/*
   Synchronous call to get the contents of a local file
 
   **LOCAL FILES ONLY**
@@ -292,7 +320,20 @@ const loadSourceFromBaseURL = function(baseURL, projects, slug, username, devMod
 *  Set the counter on the page showing the number of currently running DataSources
 */
 const setCounter = function(count) {
-  $("body").append('<div id="mtr-datasource-counter"><span id="count">' + count + '</span></div>');
+  if(count == 0) {
+    return;
+  }
+
+  var $parentDiv = $('<div>');
+  $parentDiv.appendTo($(document.body));
+  var shadow = setUpShadowDOM($parentDiv);
+
+  $frame = setUpCounter(shadow);
+
+  // Set up some useful refs
+  var $frameDocument = $frame.contents();
+  var $frameWindow = $($frame[0].contentWindow);
+  var $modal = $frameDocument.find('.mtr-modal-content');
 }
 
 /**
