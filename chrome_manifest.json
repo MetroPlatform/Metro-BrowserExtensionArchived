@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Metro",
   "description": "This extension allows a user to produce data using https://metro.exchange",
-  "version": "0.3.3",
+  "version": "0.3.4",
 
   "browser_action": {
     "default_icon": "assets/metroLogo.png",
@@ -31,6 +31,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "css": ["src/static/css/overlay.css"],
       "js": [
         "src/core/scriptLoader.js",
         "src/vendor/jquery/jquery.js"

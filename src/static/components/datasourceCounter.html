@@ -18,17 +18,8 @@
     z-index: 9999999;
   }
 
-  #mtr-datasource-counter span.text {
-    visibility: hidden;
-  }
-
   #mtr-datasource-counter:hover {
     width: 10rem;
-    text-align: left;
-  }
-
-  #mtr-datasource-counter:hover span.text {
-    visibility: visible;
   }
 </style>
 
@@ -37,7 +28,9 @@
     <title>Metro DataSource Counter</title>
   </head>
   <body>
-    <div id="mtr-datasource-counter">3 DataSources Active</div>
+    <div id="mtr-datasource-counter">
+      <span class="count">0</span>
+    </div>
   </body>
 </html>
 

@@ -202,7 +202,7 @@ function setUpModal(shadow) {
 /*
   Given a reference to a Shadow DOM, set up an iFrame for the counter
 */
-function setUpCounter(shadow) {
+function setUpCounterFrame(shadow) {
   // Add the iFrame CSS
   var overlayStyleUrl = chrome.extension.getURL('src/static/css/overlay.css');
   $('<link>', {
@@ -319,21 +319,46 @@ const loadSourceFromBaseURL = function(baseURL, projects, slug, username, devMod
 /*
 *  Set the counter on the page showing the number of currently running DataSources
 */
-const setCounter = function(count) {
+const setUpCounter = function(count) {
   if(count == 0) {
     return;
   }
 
+  chrome.storage.sync.get("Settings-showCounterCheckbox", function(items) {
+    if(chrome.runtime.error) {
+      return false;
+    } else {
+      if(items["Settings-showCounterCheckbox"]) {
+        initializeCounter(count);
+      } else {
+        return;
+      }
+    }
+  });
+}
+
+/*
+* Initialize the DS Counter in the bottom left of the page
+*/
+
+const initializeCounter = function(count) {
   var $parentDiv = $('<div>');
   $parentDiv.appendTo($(document.body));
-  var shadow = setUpShadowDOM($parentDiv);
+  var shadow = setUpShadowDOM($parentDiv); // Shadow DOM to encapsulate our CSS
 
-  $frame = setUpCounter(shadow);
+  $frame = setUpCounterFrame(shadow);
 
   // Set up some useful refs
   var $frameDocument = $frame.contents();
   var $frameWindow = $($frame[0].contentWindow);
-  var $modal = $frameDocument.find('.mtr-modal-content');
+  var $counter = $frameDocument.find('#mtr-datasource-counter');
+  $counter.find('span.count').text(count);
+
+  $counter.hover(function() { // Handle the change when we hover
+    $( this ).append($( '<span class="text"> DataSources Active </span>' ))
+  }, function() {
+    $( this ).find( "span:last" ).remove();
+  });
 }
 
 /**
@@ -373,7 +398,7 @@ const parseAllowedSources = function(response) {
       }
     }
 
-    setCounter(datasourceCount);
+    setUpCounter(datasourceCount);
 
   } else {
     console.log("Error loading datasources from API:");

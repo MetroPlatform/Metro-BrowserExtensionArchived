@@ -55,20 +55,21 @@ function allowLinks() {
  * its change. It also runs the clickCallback after setting the initial value
  * of the checkboxes.
  */
-function initCheckbox(id, clickCallback) {
+function initCheckbox(id, clickCallback, initialValue) {
   let button = document.getElementById(id);
 
   // First set the checkbox to the stored value.
   chrome.storage.sync.get("Settings-"+id, function(items) {
-    if(chrome.runtime.error) {
-      console.log(id + " checkbox has never been set. Setting it to false.");
-      // Assume worst - set it manually to false.
-      let storageItem = {};
-      storageItem["Settings-"+id] = false;
-      chrome.storage.sync.set(storageItem);
-      button.checked = false;
-    } else {
+    if('Settings-'+id in items) {
+      console.log("Setting found");
       button.checked = items["Settings-"+id];
+    } else {
+      console.log(id + " checkbox has never been set. Setting it to " + initialValue + ".");
+      // Set it manually
+      let storageItem = {};
+      storageItem["Settings-"+id] = initialValue;
+      chrome.storage.sync.set(storageItem);
+      button.checked = initialValue;
     }
 
     // Simulate a click after setting the checkbox value.
@@ -142,8 +143,9 @@ function initDevMode() {
 
 // Entry point:
 document.addEventListener('DOMContentLoaded', () => {
-  initCheckbox("shouldMonitorCheckbox", () => {});
-  initCheckbox("devModeCheckbox", initDevMode);
+  initCheckbox("shouldMonitorCheckbox", () => {}, true);
+  initCheckbox("showCounterCheckbox", () => {}, true);
+  initCheckbox("devModeCheckbox", initDevMode, false);
 
   allowLinks();
 });
