@@ -24,8 +24,19 @@
           <p>
             You can add and remove DataSources <a href="https://metro.exchange/datasources">here</a>.
           <div id="settingsContainer">
-            <input type="checkbox" id="shouldMonitorCheckbox">Metro Enabled<br/><br/>
-            <input type="checkbox" id="devModeCheckbox">Dev Mode?<br/>
+            <div class="custom-control custom-checkbox my-1 mr-sm-2">
+              <input type="checkbox" class="custom-control-input" id="shouldMonitorCheckbox">
+              <label class="custom-control-label" for="shouldMonitorCheckbox">Metro Enabled</label>
+            </div>
+            <div class="custom-control custom-checkbox my-1 mr-sm-2">
+              <input type="checkbox" class="custom-control-input" id="showCounterCheckbox">
+              <label class="custom-control-label" for="showCounterCheckbox">Show DataSource Counter</label>
+            </div>
+
+            <div class="custom-control custom-checkbox my-1 mr-sm-2">
+              <input type="checkbox" class="custom-control-input" id="devModeCheckbox">
+              <label class="custom-control-label" for="devModeCheckbox">Developer Mode</label>
+            </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,11 @@
+iframe.mtr-overlay {
+    background-color: transparent;
+    overflow: hidden;
+    display: block;
+    padding: 0px;
+    position: fixed;
+    border: none;
+    left: 0px;
+    bottom: 0px;
+    z-index: 9999999;
+}

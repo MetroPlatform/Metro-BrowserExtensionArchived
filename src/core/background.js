@@ -53,23 +53,15 @@ const onPageLoad = function(data, sender) {
 
   getDataFromURL(manifestURL, function(manifestText) {
     let manifest = JSON.parse(manifestText);
-    let siteRegexes = manifest['sites'];
 
     if(devMode == true) {
       slug = manifest['name'];
     }
 
-    for(var i=0, len=siteRegexes.length; i<len; i++) {
-      let regex = new RegExp(siteRegexes[i]);
+    let scriptURL = baseURL + "/plugin.js?t=" + Date.now();
+    let schemaURL = baseURL + "/schema.json?t=" + Date.now();
 
-      // If the current site matches one of the manifest regexes...
-      if(regex.test(tab.url)) {
-        let scriptURL = baseURL + "/plugin.js?t=" + Date.now();
-        let schemaURL = baseURL + "/schema.json?t=" + Date.now();
-
-        runDataSource(tab.id, manifest['name'], scriptURL, schemaURL, projects, slug, username);
-      }
-    }
+    runDataSource(tab.id, manifest['name'], scriptURL, schemaURL, projects, slug, username);
   });
 }
 

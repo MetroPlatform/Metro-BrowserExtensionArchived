@@ -200,6 +200,34 @@ function setUpModal(shadow) {
 }
 
 /*
+  Given a reference to a Shadow DOM, set up an iFrame for the counter
+*/
+function setUpCounterFrame(shadow) {
+  // Add the iFrame CSS
+  var overlayStyleUrl = chrome.extension.getURL('src/static/css/overlay.css');
+  $('<link>', {
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: overlayStyleUrl
+  }).appendTo($(shadow));
+
+  // Add the iFrame
+  var overlayFullURL = chrome.extension.getURL('src/static/components/datasourceCounter.html');
+  var $frame = $('<iframe>', {
+    src: overlayFullURL,
+    class: 'mtr-overlay'
+  })
+  $frame.appendTo($(shadow));
+
+  // Hacky re-write of the iFrame so we can access its DOM; due to security restrictions
+  $frame[0].contentDocument.open();
+  $frame[0].contentDocument.write(getFrameHtml(overlayFullURL));
+  $frame[0].contentDocument.close();
+
+  return $frame;
+}
+
+/*
   Synchronous call to get the contents of a local file
 
   **LOCAL FILES ONLY**
@@ -288,6 +316,51 @@ const loadSourceFromBaseURL = function(baseURL, projects, slug, username, devMod
   chrome.runtime.sendMessage(dsDetails, {});
 }
 
+/*
+*  Set the counter on the page showing the number of currently running DataSources
+*/
+const setUpCounter = function(count) {
+  if(count == 0) {
+    return;
+  }
+
+  chrome.storage.sync.get("Settings-showCounterCheckbox", function(items) {
+    if(chrome.runtime.error) {
+      return false;
+    } else {
+      if(items["Settings-showCounterCheckbox"]) {
+        initializeCounter(count);
+      } else {
+        return;
+      }
+    }
+  });
+}
+
+/*
+* Initialize the DS Counter in the bottom left of the page
+*/
+
+const initializeCounter = function(count) {
+  var $parentDiv = $('<div>');
+  $parentDiv.appendTo($(document.body));
+  var shadow = setUpShadowDOM($parentDiv); // Shadow DOM to encapsulate our CSS
+
+  $frame = setUpCounterFrame(shadow);
+
+  // Set up some useful refs
+  var $frameDocument = $frame.contents();
+  var $frameWindow = $($frame[0].contentWindow);
+  var $counter = $frameDocument.find('#mtr-datasource-counter');
+  $counter.find('span.count').text(count);
+
+  $counter.hover(function() { // Handle the change when we hover
+    $( this ).append($( '<span class="text"> DataSources Active </span>' ))
+  }, function() {
+    $( this ).find( "span:last" ).remove();
+  });
+}
+
 /**
  * Given a response from the API, enables any sources which should be allowed
  * to run on the current site.
@@ -298,20 +371,34 @@ const parseAllowedSources = function(response) {
   if(response['status'] == 1) {
     let allowedSources = response['content']['datasources'];
     let username = response['content']['username'];
+    let datasourceCount = 0;
 
     for(var i=0, len=allowedSources.length; i<len; i++) {
       let currentDS = allowedSources[i];
-      let projects = [];
-      for(var projectIndex=0; projectIndex<currentDS['projects'].length; projectIndex++) {
-        projects.push(currentDS['projects'][projectIndex]['slug']);
+      let siteRegexes = currentDS['sites'];
+
+      for(var j=0, lenSites=siteRegexes.length; j<lenSites; j++) {
+        let regex = new RegExp(siteRegexes[j]);
+
+        // If the current site matches one of the manifest regexes...
+        if(regex.test(window.location.toString())) {
+
+          let projects = [];
+          for(var projectIndex=0; projectIndex<currentDS['projects'].length; projectIndex++) {
+            projects.push(currentDS['projects'][projectIndex]['slug']);
+          }
+
+          let slug = currentDS['slug'];
+
+          let sourceURL = "https://raw.githubusercontent.com/MetroPlatform/Metro-DataSources/master/datasources/" + currentDS['name'];
+
+          loadSourceFromBaseURL(sourceURL, projects, slug, username, false);
+          datasourceCount++;
+        }
       }
-
-      let slug = currentDS['slug'];
-
-      let sourceURL = "https://raw.githubusercontent.com/MetroPlatform/Metro-DataSources/master/datasources/" + currentDS['name'];
-
-      loadSourceFromBaseURL(sourceURL, projects, slug, username, false);
     }
+
+    setUpCounter(datasourceCount);
 
   } else {
     console.log("Error loading datasources from API:");
