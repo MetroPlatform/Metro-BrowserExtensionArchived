@@ -81,7 +81,7 @@ const createMetroClient = function(datasource, slug, username, projects, schema)
      *  - submitCallback: Function to call when the input is submitted.
      */
     createModalForm: function(dialogDetails) {
-      var description = dialogDetails['description'];
+      var inputs = dialogDetails['inputs']
       var submitCallback = dialogDetails['submitCallback'];
 
       var $parentDiv = $('<div>');
@@ -94,22 +94,32 @@ const createMetroClient = function(datasource, slug, username, projects, schema)
       var $frameDocument = $frame.contents();
       var $frameWindow = $($frame[0].contentWindow);
       var $modal = $frameDocument.find('.mtr-modal-content');
+      var $modalForm = $modal.find(".mtr-modal-form");
 
-      $modal.find(".mtr-form-input").attr("placeholder", description); // Set input placeholder
+      for (var i = 0; i < inputs.length ; i++) {
+        addModalInput($modalForm, inputs[i], i);
+      }
+
+      // Callback and then remove the modal, upon submit
+      $modalForm.on('submit', function(e) {
+        var res = {'inputs': []};
+
+        $modalForm.find('.mtr-form-input-row').each(function(idx) {
+          res['inputs'].push($(this).find('.mtr-form-input').val())
+        })
+
+        submitCallback(res);
+
+        $parentDiv.remove(); // Remove modal when we're done
+        // Stops the normal form processing.
+        e.preventDefault();
+      });
 
       // Remove modal when ESC is pressed
       $frameDocument.on('keyup.27', function(e) {
         if (e.which == 27) { // escape key maps to keycode `27`
           $parentDiv.remove();
         }
-      });
-
-      // Callback and then remove the modal, upon submit
-      $modal.find(".mtr-modal-form").on('submit', function(e) {
-        submitCallback($modal.find(".mtr-form-input").val());
-        $parentDiv.remove(); // Remove modal when we're done
-        // Stops the normal form processing.
-        e.preventDefault();
       });
 
       // When the user clicks anywhere outside of the modal && input box, close it
@@ -120,6 +130,30 @@ const createMetroClient = function(datasource, slug, username, projects, schema)
       });
     },
   }
+}
+
+/*
+* Creates a row with two cols to hold the description and input for the input
+*/
+const addModalInput = function($modal, inputDetails, idx) {
+  var $row = $('<div class="row mtr-form-input-row">').appendTo($modal);
+
+  $('<p class="col-4">').text(inputDetails['description']).appendTo($row);
+
+  var $elem = $('<' + inputDetails['type'] + '>').addClass('mtr-form-input col').attr('id', 'mtr-input-' + idx);
+  if(inputDetails['type'] == 'select') {
+    // Add the options for the select
+    $(inputDetails['options']).each(function() {
+     $elem.append($("<option>").attr('value',this.val).text(this.text));
+    });
+
+  }
+
+  if(idx == 0) {
+    // Set autofocus
+    $elem.prop('autofocus', true);
+  }
+  $elem.appendTo($row);
 }
 
 /*
