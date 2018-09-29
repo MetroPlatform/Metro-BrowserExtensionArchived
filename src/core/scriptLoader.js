@@ -100,6 +100,8 @@ const createMetroClient = function(datasource, slug, username, projects, schema)
         addModalInput($modalForm, inputs[i], i);
       }
 
+      $('<input class="btn btn-success" type="submit" value="submit">').appendTo($modalForm);
+
       // Callback and then remove the modal, upon submit
       $modalForm.on('submit', function(e) {
         var res = {'inputs': []};
@@ -122,14 +124,25 @@ const createMetroClient = function(datasource, slug, username, projects, schema)
         }
       });
 
-      // When the user clicks anywhere outside of the modal && input box, close it
-      $frameWindow.on('click', function(event) {
-        if (event.target != $modal[0] && event.target != $modal.find('.mtr-form-input')[0]) {
-          $parentDiv.remove(); // Remove modal if the user closes it
+      $(document).on('click', function(event) {
+        if(!hasShadowParent(event.target)) {
+          $parentDiv.remove();
         }
       });
     },
   }
+}
+
+/*
+* Checks if the element is in a ShadowDOM
+*/
+function hasShadowParent(element) {
+    while(element.parentNode && (element = element.parentNode)){
+        if(element instanceof ShadowRoot){
+            return true;
+        }
+    }
+    return false;
 }
 
 /*
@@ -229,6 +242,13 @@ function setUpModal(shadow) {
   $frame[0].contentDocument.open();
   $frame[0].contentDocument.write(getFrameHtml(modalFullURL));
   $frame[0].contentDocument.close();
+
+  var bootstrapURL= chrome.extension.getURL('src/vendor/bootstrap/bootstrap.css');
+  $('<link>', {
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: bootstrapURL
+  }).appendTo($($frame[0].contentDocument).find('body'));
 
   return $frame;
 }
