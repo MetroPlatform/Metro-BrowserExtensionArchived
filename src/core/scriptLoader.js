@@ -408,10 +408,10 @@ const initializeCounter = function(count) {
   var $counter = $frameDocument.find('#mtr-datasource-counter');
   $counter.find('span.count').text(count);
 
-  $counter.hover(function() { // Handle the change when we hover
-    $( this ).append($( '<span class="text"> DataSources Active </span>' ))
+  $frame.hover(function() { // Handle the change when we hover
+    $counter.append($( '<span class="text"> DataSources Active </span>' ))
   }, function() {
-    $( this ).find( "span:last" ).remove();
+    $counter.find( "span:last" ).remove();
   });
 }
 
