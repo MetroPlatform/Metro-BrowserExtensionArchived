@@ -161,17 +161,39 @@ const populateUserInfo = function(response) {
 
   if(response['status'] == 1) {
     let username = response['content']['username'];
-    $('#username').text(username);
+    $('#username').append(username);
   } else {
     $('#username').addClass('text-danger').text('ERROR');
   }
 
 }
 
+/*
+*
+*/
+const populateVersionInfo = function(response) {
+  let ver = chrome.runtime.getManifest().version;
+  $('#version').append(ver);
+
+  response = JSON.parse(response);
+  let currentVer = response['content']['chromeVersion'];
+
+  currentVer = parseInt(currentVer.replace(/\D/g,''));
+  ver = parseInt(ver.replace(/\D/g,''));
+
+  if(currentVer > ver) {
+    $('#newVersion').removeClass('d-none');
+  }
+
+  console.log(currentVer);
+  console.log(ver);
+}
+
 
 // Entry point:
 document.addEventListener('DOMContentLoaded', () => {
   getDataFromURL("https://metro.exchange/api/profile/", populateUserInfo);
+  getDataFromURL("https://metro.exchange/api/extension/status", populateVersionInfo);
   initCheckbox("shouldMonitorCheckbox", () => {}, true);
   initCheckbox("showCounterCheckbox", () => {}, true);
   initCheckbox("devModeCheckbox", initDevMode, false);
