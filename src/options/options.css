@@ -16,8 +16,9 @@ a {
 }
 
 a:hover {
-    color: #efc04e;
-  }
+  color: #efc04e;
+  text-decoration: none;
+}
 
 .list-group-item {
   word-wrap: break-word;
