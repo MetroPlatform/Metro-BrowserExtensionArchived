@@ -140,9 +140,38 @@ function initDevMode() {
   }
 }
 
+const getDataFromURL = function loadURL(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+
+  xhr.onreadystatechange = function() {
+    if(xhr.readyState == 4) {
+      callback(xhr.responseText);
+    }
+  }
+
+  xhr.send();
+}
+
+/**
+*** Populates the user information in the browser extension with the data from the Metro API
+**/
+const populateUserInfo = function(response) {
+  response = JSON.parse(response);
+
+  if(response['status'] == 1) {
+    let username = response['content']['username'];
+    $('#username').text(username);
+  } else {
+    $('#username').addClass('text-danger').text('ERROR');
+  }
+
+}
+
 
 // Entry point:
 document.addEventListener('DOMContentLoaded', () => {
+  getDataFromURL("https://metro.exchange/api/profile/", populateUserInfo);
   initCheckbox("shouldMonitorCheckbox", () => {}, true);
   initCheckbox("showCounterCheckbox", () => {}, true);
   initCheckbox("devModeCheckbox", initDevMode, false);
