@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Metro",
   "description": "This extension allows a user to produce data using https://metro.exchange",
-  "version": "0.3.4",
+  "version": "0.3.7",
 
   "applications": {
     "gecko": {
@@ -47,6 +47,11 @@
         "src/vendor/jquery/jquery.js"
       ]
     }
+  ],
+
+  "web_accessible_resources": [
+    "src/static/*",
+    "src/vendor/bootstrap/*"
   ],
 
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"

@@ -7,7 +7,7 @@ iframe.mtr-iframe {
   position: fixed;
   width: 80%;
   min-width: 400px;
-  height: calc(100% - 70px);
+  height: calc(30%);
   top: 70px;
   left: 50%;
   margin: 0 0 0 -40%;
