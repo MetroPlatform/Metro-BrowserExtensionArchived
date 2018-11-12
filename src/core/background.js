@@ -162,7 +162,7 @@ const pushToLambda = function(datapointDetails) {
     datapoint = datapointDetails['datapoint'];
 
     var xhr = new XMLHttpRequest();
-    var url = "https://push.metro.exchange";
+    var url = "https://push.getmetro.co";
 
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-type", "application/json");
@@ -198,7 +198,7 @@ const pushToLambda = function(datapointDetails) {
  */
 const getKeyAndPush = function(xhr, data) {
   let keyRequester = new XMLHttpRequest();
-  keyRequester.open("GET", "https://metro.exchange/api/profile/api_key/", true);
+  keyRequester.open("GET", "https://getmetro.co/api/profile/api_key/", true);
 
   keyRequester.onreadystatechange = function() {
     if(keyRequester.readyState == 4) {

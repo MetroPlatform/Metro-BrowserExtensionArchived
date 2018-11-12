@@ -482,7 +482,7 @@ const loadScripts = function() {
         });
       } else {
         // Otherwise load the "real" DataSources.
-        getDataFromURL("https://metro.exchange/api/profile/datasources/", parseAllowedSources);
+        getDataFromURL("https://getmetro.co/api/profile/datasources/", parseAllowedSources);
       }
     }
   });

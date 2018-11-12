@@ -192,8 +192,8 @@ const populateVersionInfo = function(response) {
 
 // Entry point:
 document.addEventListener('DOMContentLoaded', () => {
-  getDataFromURL("https://metro.exchange/api/profile/", populateUserInfo);
-  getDataFromURL("https://metro.exchange/api/extension/status", populateVersionInfo);
+  getDataFromURL("https://getmetro.co/api/profile/", populateUserInfo);
+  getDataFromURL("https://getmetro.co/api/extension/status", populateVersionInfo);
   initCheckbox("shouldMonitorCheckbox", () => {}, true);
   initCheckbox("showCounterCheckbox", () => {}, true);
   initCheckbox("devModeCheckbox", initDevMode, false);
