@@ -1,3 +1,7 @@
+**ARCHIVED**
+
+This repository is archived, please see the new repository [here](https://github.com/MetroPlatform/Metro-BrowserExtension)
+
 ## Introduction ##
 
 This is the Chrome extension used to power Metro. The main work is done in
